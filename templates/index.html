@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerability Scanner</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Vulnerability Scanner</h1>
+        <form id="scanForm">
+            <label for="target">Target IP/Hostname:</label>
+            <input type="text" id="target" name="target" placeholder="e.g., 192.168.1.1" required>
+            
+            <label for="scan_type">Scan Type:</label>
+            <select id="scan_type" name="scan_type">
+                <option value="-sV">Service Version Detection</option>
+                <option value="-O">OS Detection</option>
+                <option value="-A">Aggressive Scan</option>
+            </select>
+            
+            <button type="submit">Scan</button>
+        </form>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        document.getElementById('scanForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            fetch('/scan', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('results');
+                if (data.status === 'success') {
+                    resultsDiv.innerHTML = `<pre>${JSON.stringify(data.results, null, 2)}</pre>`;
+                } else {
+                    resultsDiv.innerHTML = `<p style="color: red;">Error: ${data.message}</p>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
