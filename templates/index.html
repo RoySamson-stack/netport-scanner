@@ -5,14 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vulnerability Scanner</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
+        <button id="toggleSidePanelButton" class="menu-icon">
+            <i class="fas fa-bars"></i> 
+        </button>
+
         <h1>Vulnerability Scanner</h1>
+        <div>
+            <div class="side-panel" id="sidePanel">
+                <h2>Side Panel</h2>
+                <p>Previous scans</p>
+                <p></p>
+            </div>
+        </div>
         <form id="scanForm">
             <label for="target">Target IP/Hostname:</label>
             <input type="text" id="target" name="target" placeholder="e.g., 192.168.1.1" required>
-            
+            <div id="targetDiv2">
+                <input type="text" id="target" name="target2" placeholder="e.g., 192.168.1.1">
+            </div>
+            <button id="toggleButton">Add target</button>
             <label for="scan_type">Scan Type:</label>
             <select id="scan_type" name="scan_type">
                 <option value="-sV">Service Version Detection</option>

@@ -25,19 +25,27 @@ label {
     font-weight: bold;
 }
 
-input, select, button {
+input, select{
     width: 100%;
     padding: 10px;
     margin-bottom: 20px;
     border: 1px solid #ccc;
     border-radius: 4px;
 }
-
+#target{
+    width: 98%;
+    padding: 10px;
+}
 button {
     background-color: #28a745;
     color: white;
-    font-size: 16px;
+    font-size: 12px;
     cursor: pointer;
+    width: 10%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
 button:hover {
@@ -66,4 +74,68 @@ a {
 
 a:hover {
     text-decoration: underline;
+}
+#targetDiv2 {
+    display: none;
+}
+.side-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100%;
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+    transition: transform 0.3s ease;
+    transform: translateX(-100%);
+}
+
+.side-panel.open {
+    transform: translateX(0);
+}
+
+@media (max-width: 768px) {
+    .side-panel {
+        display: none;
+    }
+}
+
+#toggleSidePanelButton {
+    position: fixed;
+    top: 5px;
+    left: 5px;
+    color: black;
+    border: none;
+    cursor: pointer;
+    z-index: 1000;
+    background-color: transparent; 
+    padding: 10px; 
+    border-radius: 5px; 
+    width: auto; 
+    margin: 0; 
+    font-size: 16px; 
+}
+
+#toggleSidePanelButton:hover {
+    background-color: rgba(0, 0, 0, 0.1); 
+}
+
+.side-panel {
+    width: 250px; 
+    height: 100%; 
+    position: fixed; 
+    top: 0;
+    left: -250px; 
+    background-color:rgb(199, 195, 195); 
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    transition: left 0.3s ease; 
+    z-index: 999; 
+    color: black;
+}
+
+.side-panel.active {
+    left: 0; 
 }
