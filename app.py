@@ -17,13 +17,12 @@ def index():
 @app.route('/scan', methods=['POST'])
 def scan():
     target = request.form.get('target')
-    scan_type = request.form.get('scan_type', '-sV')  
-
+    scan_type = request.form.get('scan_type', '-sV') 
     nm = nmap.PortScanner()
     try:
         nm.scan(target, arguments=f'{scan_type} --script vulners')
 
-        scan_results = nm.analyze_scan_results()
+        scan_results = nm._scan_result  
 
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f'scan_{timestamp}.json'
