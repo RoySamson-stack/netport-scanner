@@ -3,6 +3,21 @@
 <head>
     <title>Scan Results - {{ filename }}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <style>
+        /* Custom styles for the report container */
+        .report-container {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .report-container iframe {
+            width: 100%;
+            height: 800px;
+            border: none;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -34,28 +49,8 @@
 
     <div class="container mt-4">
         <h1>Scan Results: {{ filename }}</h1>
-        
-        <div class="card mt-4">
-            <div class="card-header">
-                <h3>Scan Metadata</h3>
-            </div>
-            <div class="card-body">
-                <p><strong>Scan Name:</strong> {{ scan_data.metadata.scan_name }}</p>
-                <p><strong>Target:</strong> {{ scan_data.metadata.target }}</p>
-                <p><strong>Timestamp:</strong> {{ scan_data.metadata.timestamp }}</p>
-                <p><strong>User:</strong> {{ scan_data.metadata.user }}</p>
-            </div>
-        </div>
 
-        <div class="card mt-4">
-            <div class="card-header">
-                <h3>Scan Results</h3>
-            </div>
-            <div class="card-body">
-                <pre>{{ scan_data | tojson(indent=4) }}</pre>
-            </div>
-        </div>
-
+        <!-- Download buttons -->
         <div class="mt-4">
             <a href="{{ url_for('download_json', filename=filename) }}" class="btn btn-primary">
                 Download JSON
@@ -63,6 +58,11 @@
             <a href="{{ url_for('download_report', filename=report_filename) }}" class="btn btn-secondary">
                 Download Report
             </a>
+        </div>
+
+        <!-- HTML Report Container -->
+        <div class="report-container mt-4">
+            {{ html_report | safe }}
         </div>
     </div>
 
