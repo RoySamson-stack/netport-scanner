@@ -4,7 +4,6 @@
     <title>Scan Results - {{ filename }}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <style>
-        /* Custom styles for the report container */
         .report-container {
             margin: 20px 0;
             padding: 20px;
@@ -50,7 +49,6 @@
     <div class="container mt-4">
         <h1>Scan Results: {{ filename }}</h1>
 
-        <!-- Download buttons -->
         <div class="mt-4">
             <a href="{{ url_for('download_json', filename=filename) }}" class="btn btn-primary">
                 Download JSON
@@ -60,7 +58,6 @@
             </a>
         </div>
 
-        <!-- HTML Report Container -->
         <div class="report-container mt-4">
             {{ html_report | safe }}
         </div>
