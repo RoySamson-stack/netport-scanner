@@ -101,7 +101,7 @@ def dashboard():
 
 @app.route('/scan', methods=['GET', 'POST'])
 @analyst_required
-def scan(module_name):
+def scan():
     if request.method == 'GET':
         return render_template('scan_form.html')
     
