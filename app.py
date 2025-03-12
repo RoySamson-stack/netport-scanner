@@ -137,6 +137,7 @@ def scan():
         flash(f'Error during scan: {str(e)}')
         return redirect(url_for('dashboard'))
 
+
 @app.route('/view_scan/<filename>')
 @login_required
 def view_scan_results(filename):
@@ -146,27 +147,26 @@ def view_scan_results(filename):
         flash('Scan not found')
         return redirect(url_for('dashboard'))
     
-    print(f'losfing scan file: {filepath}')
-    
-
     try:
         with open(filepath, 'r') as f:
             scan_data = json.load(f)
-
     except Exception as e:
         flash(f'Error loading scan data: {str(e)}')
         return redirect(url_for('dashboard'))
     
-    print(f'Scan data: {scan_data}')
-
-
     timestamp = filename.replace('scan_', '').replace('.json', '')
     report_filename = f'report_{timestamp}.html'
-
-    print(f'report filename: {report_filename}')
+    report_path = os.path.join(app.config['REPORTS_DIR'], report_filename)
+    
+    if not os.path.exists(report_path):
+        flash('Report not found')
+        return redirect(url_for('dashboard'))
+    
+    with open(report_path, 'r') as f:
+        html_report = f.read()
     
     return render_template('scan_results.html', 
-                          scan_data=scan_data,
+                          html_report=html_report,
                           filename=filename,
                           report_filename=report_filename)
 
