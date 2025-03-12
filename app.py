@@ -110,7 +110,7 @@ def scan():
     scan_type = request.form.get('scan_type', '-sV')
     scan_name = request.form.get('scan_name', 'Unnamed Scan')
     
-    subprocess.run([['recon-ng','-w ', 'target', '-m', module_name, 't'. target]])
+    # subprocess.run([['recon-ng','-w ', 'target', '-m', module_name, 't'. target]])
 
 
     modules = [
