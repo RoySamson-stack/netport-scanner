@@ -99,47 +99,53 @@ def dashboard():
                           scans=scans, 
                           user_role=current_user.role)
 
-
 @app.route('/scan', methods=['GET', 'POST'])
 @analyst_required
-def scan():
+def scan(module_name):
     if request.method == 'GET':
         return render_template('scan_form.html')
-
+    
+    
     target = request.form.get('target')
     scan_type = request.form.get('scan_type', '-sV')
     scan_name = request.form.get('scan_name', 'Unnamed Scan')
-    module_name = request.form.get('module_name')
+    
+    subprocess.run([['recon-ng','-w ', 'target', '-m', module_name, 't'. target]])
 
-    recon_ng_command = ['recon-ng', '-w', 'target', '-m', module_name, '-t', target]
-    subprocess.run(recon_ng_command)
 
+    modules = [
+        'recon/domains-hosts/bing_domain_web',
+        'recon/domains-hosts/google_site_web',
+        'recon/domains-hosts/shodan_ip',
+        'recon/domains-hosts/virustotal'
+    ]
+    
     nm = nmap.PortScanner()
     try:
         nm.scan(target, arguments=f'{scan_type} --script vulners')
-
+        
         scan_results = nm._scan_result
-
+        
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f'scan_{timestamp}.json'
         filepath = os.path.join(app.config['SCANS_DIR'], filename)
-
+        
         scan_results['metadata'] = {
             'scan_name': scan_name,
             'timestamp': timestamp,
             'user': current_user.id,
             'target': target,
-            'scan_type': scan_type,
-            'recon_ng_module': module_name
+            'scan_type': scan_type
         }
-
+        
+        
         with open(filepath, 'w') as f:
             json.dump(scan_results, f, indent=4)
-
+        
         report_filename = generate_html_report(scan_results, timestamp)
-
+        
         return redirect(url_for('view_scan_results', filename=filename))
-
+    
     except Exception as e:
         flash(f'Error during scan: {str(e)}')
         return redirect(url_for('dashboard'))
@@ -236,37 +242,36 @@ def generate_html_report(scan_results, timestamp):
     """Generate a human-readable HTML report from scan results"""
     report_filename = f'report_{timestamp}.html'
     report_path = os.path.join(app.config['REPORTS_DIR'], report_filename)
-
+    
     metadata = scan_results.get('metadata', {})
     scan_name = metadata.get('scan_name', 'Unnamed Scan')
     scan_time = metadata.get('timestamp', 'Unknown')
     target = metadata.get('target', 'Unknown')
-    recon_ng_module = metadata.get('recon_ng_module', 'None')
-
+    
     hosts_data = []
     total_open_ports = 0
     total_vulnerabilities = 0
     critical_vulnerabilities = 0
-
+    
     for host_ip in scan_results.get('scan', {}):
         host_data = scan_results['scan'][host_ip]
-
+        
         hostnames = [name['name'] for name in host_data.get('hostnames', [])]
         hostname_str = ', '.join(hostnames) if hostnames else 'Unknown'
-
+        
         port_data = []
         host_open_ports = 0
-
+        
         for protocol in ['tcp', 'udp']:
             if protocol in host_data:
                 for port_num, port_info in host_data[protocol].items():
                     if port_info['state'] == 'open':
                         host_open_ports += 1
                         total_open_ports += 1
-
+                        
                         vulners_script = port_info.get('script', {}).get('vulners', '')
                         vulnerabilities = []
-
+                        
                         if vulners_script:
                             vulners_lines = vulners_script.split('\n')
                             for line in vulners_lines:
@@ -277,10 +282,10 @@ def generate_html_report(scan_results, timestamp):
                                         'cvss': float(line.split()[1].strip('[]')) if len(line.split()) > 1 else 0
                                     }
                                     vulnerabilities.append(vulnerability)
-
+                                    
                                     if vulnerability['cvss'] >= 9.0:
                                         critical_vulnerabilities += 1
-
+                        
                         port_data.append({
                             'port': port_num,
                             'protocol': protocol,
@@ -289,14 +294,14 @@ def generate_html_report(scan_results, timestamp):
                             'version': port_info.get('version', ''),
                             'vulnerabilities': vulnerabilities
                         })
-
+        
         hosts_data.append({
             'ip': host_ip,
             'hostname': hostname_str,
             'open_ports': host_open_ports,
             'ports': port_data
         })
-
+    
     html = f"""
     <!DOCTYPE html>
     <html>
@@ -325,9 +330,8 @@ def generate_html_report(scan_results, timestamp):
             <p><strong>Target:</strong> {target}</p>
             <p><strong>Date:</strong> {scan_time}</p>
             <p><strong>User:</strong> {metadata.get('user', 'Unknown')}</p>
-            <p><strong>Recon-ng Module:</strong> {recon_ng_module}</p>
         </div>
-
+        
         <div class="summary">
             <h2>Executive Summary</h2>
             <div class="overview">
@@ -347,14 +351,14 @@ def generate_html_report(scan_results, timestamp):
             </div>
         </div>
     """
-
+    
     for host in hosts_data:
         html += f"""
         <div class="host">
             <h2>Host: {host['ip']}</h2>
             <p><strong>Hostname:</strong> {host['hostname']}</p>
             <p><strong>Open Ports:</strong> {host['open_ports']}</p>
-
+            
             <div class="ports">
                 <h3>Port Details</h3>
                 <table>
@@ -367,7 +371,7 @@ def generate_html_report(scan_results, timestamp):
                         <th>Vulnerabilities</th>
                     </tr>
         """
-
+        
         for port in host['ports']:
             vuln_class = ""
             if any(v['cvss'] >= 9.0 for v in port['vulnerabilities']):
@@ -376,7 +380,7 @@ def generate_html_report(scan_results, timestamp):
                 vuln_class = "vuln-medium"
             elif port['vulnerabilities']:
                 vuln_class = "vuln-low"
-
+            
             html += f"""
                 <tr class="{vuln_class}">
                     <td>{port['port']}</td>
@@ -386,7 +390,7 @@ def generate_html_report(scan_results, timestamp):
                     <td>{port['version']}</td>
                     <td>
             """
-
+            
             if port['vulnerabilities']:
                 html += "<ul>"
                 for vuln in sorted(port['vulnerabilities'], key=lambda x: x['cvss'], reverse=True):
@@ -395,26 +399,26 @@ def generate_html_report(scan_results, timestamp):
                 html += "</ul>"
             else:
                 html += "None detected"
-
+            
             html += """
                     </td>
                 </tr>
             """
-
+        
         html += """
                 </table>
             </div>
         </div>
         """
-
+    
     html += """
     </body>
     </html>
     """
-
+    
     with open(report_path, 'w') as f:
         f.write(html)
-
+    
     return report_filename
 
 if __name__ == '__main__':
